@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PB FPS Online</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+<div id="landscape-chip">LANDSCAPE DIPAKSA &mdash; PEGANG HP MIRING</div>
+
+<!-- ================= MENU ================= -->
+<section id="menu-screen" class="screen active">
+  <div class="topbar">
+    <div class="logo">PB FPS <span>ONLINE</span><small>POINT BLANK STYLE &middot; 8v8</small></div>
+    <div class="lang-toggle">
+      <button id="lang-id" type="button">ID</button>
+      <button id="lang-en" type="button">EN</button>
+    </div>
+  </div>
+  <div id="menu-status"></div>
+  <div class="menu-wrap">
+    <div class="card">
+      <h2 data-i18n="soldier">Prajurit</h2>
+      <label for="player-name" data-i18n="name">Nama Prajurit</label>
+      <input type="text" id="player-name" maxlength="16" placeholder="Hendra">
+      <h3 data-i18n="team">Tim</h3>
+      <div class="seg" id="team-seg">
+        <button type="button" data-team="CT" class="ct">CT-Force</button>
+        <button type="button" data-team="FR" class="fr">Free Rebels</button>
+      </div>
+      <h3 data-i18n="character">Karakter</h3>
+      <div class="char-grid" id="char-grid"></div>
+      <div class="weapon-pick">
+        <h2 data-i18n="weaponPick">WEAPON &mdash; PICK HERE</h2>
+        <div class="weapon-grid" id="weapon-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="createRoom">Buat Room</h2>
+      <label for="map-select" data-i18n="map">Map</label>
+      <select id="map-select">
+        <option>Downtown</option><option>Luxville</option><option>Midtown</option>
+        <option>Burning Hall</option><option>Safe House</option><option>Crackdown</option>
+      </select>
+      <label for="mode-select" data-i18n="mode">Mode</label>
+      <select id="mode-select">
+        <option value="tdm">Team Deathmatch</option>
+        <option value="ffa">Free For All (FFA)</option>
+      </select>
+      <button class="btn btn-primary" id="btn-create" type="button" data-i18n="createBtn">BUAT ROOM</button>
+      <h2 style="margin-top:22px" data-i18n="joinRoom">Gabung Room</h2>
+      <label for="room-code" data-i18n="roomCode">Kode Room (4 huruf)</label>
+      <input type="text" id="room-code" class="code" maxlength="4" placeholder="ABCD" autocomplete="off">
+      <button class="btn btn-olive" id="btn-join" type="button" data-i18n="joinBtn">GABUNG</button>
+      <p class="hint" data-i18n="menuHint">Desktop: WASD gerak, mouse bidik, klik tembak, R reload, Shift lari, Tab skor, Enter chat. Mobile: joystick kiri, geser kanan untuk membidik, tombol FIRE.</p>
+    </div>
+  </div>
+  <div class="menu-foot">PB FPS Online &middot; WebSocket multiplayer &middot; v1</div>
+</section>
+
+<!-- ================= LOBBY ================= -->
+<section id="lobby-screen" class="screen">
+  <div class="lobby-wrap">
+    <div class="lobby-head">
+      <div>
+        <div class="room-code" id="lobby-code">----</div>
+        <div class="room-meta" id="lobby-meta"></div>
+      </div>
+      <button class="btn btn-ghost" id="btn-leave" type="button" style="width:auto;padding:10px 18px" data-i18n="leave">Keluar</button>
+    </div>
+    <div class="lobby-grid">
+      <div class="card">
+        <h2 data-i18n="players">Pemain</h2>
+        <ul class="player-list" id="player-list"></ul>
+        <p class="hint" id="lobby-hint"></p>
+        <button class="btn btn-primary hidden" id="btn-start" type="button" data-i18n="startMatch">START MATCH</button>
+      </div>
+      <div class="card">
+        <h2 data-i18n="loadout">Loadout</h2>
+        <h3 data-i18n="team">Tim</h3>
+        <div class="seg" id="lobby-team-seg">
+          <button type="button" data-team="CT" class="ct">CT-Force</button>
+          <button type="button" data-team="FR" class="fr">Free Rebels</button>
+        </div>
+        <h3 data-i18n="character">Karakter</h3>
+        <div class="char-grid" id="lobby-char-grid"></div>
+        <div class="weapon-pick">
+          <h2 data-i18n="weaponPick">WEAPON &mdash; PICK HERE</h2>
+          <div class="weapon-grid" id="lobby-weapon-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GAME ================= -->
+<section id="game-screen" class="screen">
+  <canvas id="game-canvas"></canvas>
+  <div id="hud">
+    <div class="hud-top">
+      <div class="hud-box"><span id="hud-room"></span><br><span id="hud-map-mode"></span></div>
+      <div class="hud-box"><div id="timer">5:00</div><div id="team-scores"></div></div>
+      <div class="hud-box"><span id="hud-player"></span><br><span id="hud-kd"></span></div>
+    </div>
+    <div class="hud-btns">
+      <button id="btn-chat" type="button"><span data-i18n="chat">CHAT</span><span id="chat-badge" class="hidden">0</span></button>
+      <button id="btn-mic" type="button">MIC OFF</button>
+      <button id="btn-score" type="button" data-i18n="score">SKOR</button>
+      <button id="btn-quit" type="button" data-i18n="leave">Keluar</button>
+    </div>
+    <div id="killfeed"></div>
+    <div id="crosshair"></div>
+    <div id="hitmarker"></div>
+    <div id="speaking" class="hidden"></div>
+    <canvas id="minimap" width="150" height="150"></canvas>
+    <div class="hud-bottom">
+      <div id="hp-bar-wrap"><div id="hp-text">HP 100</div><div id="hp-bar"><div id="hp-fill"></div></div><div id="pos-text" style="font-size:11px;color:var(--muted)"></div></div>
+      <div><div id="reload-hint"></div><div id="weapon-name">K-5</div><div id="ammo">30 <small>/ 30</small></div></div>
+    </div>
+    <div id="chat-panel" class="hidden">
+      <div id="chat-log"></div>
+      <div id="chat-input-row">
+        <input type="text" id="chat-input" maxlength="200" autocomplete="off">
+        <button id="chat-close" type="button">&times;</button>
+        <button id="chat-send" type="button">&gt;</button>
+      </div>
+    </div>
+    <div id="scoreboard" class="hidden"></div>
+    <div id="respawn-overlay" class="hidden"><h1 data-i18n="youDied">KAMU MATI</h1><p id="respawn-text"></p></div>
+    <div id="match-end" class="hidden"><h1 id="match-end-title"></h1><p id="match-end-scores"></p><button class="btn btn-primary" id="btn-back-lobby" type="button" style="width:auto;padding:12px 26px" data-i18n="backToLobby">Kembali ke Lobby</button></div>
+    <div id="reconnect" class="hidden"><span data-i18n="reconnecting">Menghubungkan ulang&hellip;</span></div>
+  </div>
+  <div id="mobile-controls">
+    <div id="joystick"><div id="joy-knob"></div></div>
+    <button class="mob-btn" id="btn-fire" type="button">FIRE</button>
+    <button class="mob-btn" id="btn-jump" type="button">JUMP</button>
+    <button class="mob-btn" id="btn-reload" type="button">RLD</button>
+  </div>
+</section>
+
+<script src="client.js"></script>
+</body>
+</html>
